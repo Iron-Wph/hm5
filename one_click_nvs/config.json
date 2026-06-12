@@ -1,0 +1,70 @@
+{
+  "project_name": "toy_nvs_project",
+  "paths": {
+    "video": "data/raw/toy.mp4",
+    "frames_raw": "data/frames_raw",
+    "frames_clean": "data/frames_clean",
+    "nerfstudio_data": "data/toy_ns",
+    "splits": "data/splits",
+    "outputs": "outputs",
+    "results": "results",
+    "figures": "results/figures",
+    "tables": "results/tables",
+    "report": "report"
+  },
+  "extract": {
+    "frame_step": 5,
+    "max_width": 960,
+    "jpeg_quality": 95
+  },
+  "filter": {
+    "blur_quantile": 0.2,
+    "brightness_min": 35,
+    "brightness_max": 225,
+    "contrast_min": 12,
+    "phash_min_distance": 5,
+    "max_frames": 180
+  },
+  "colmap": {
+    "matching_method": "exhaustive"
+  },
+  "split": {
+    "train": 0.6,
+    "val": 0.2,
+    "test": 0.2,
+    "strategy": "trajectory_round_robin"
+  },
+  "training": {
+    "dataset_json": "data/toy_ns/transforms_splits.json",
+    "max_num_iterations": 15000,
+    "models": [
+      {
+        "name": "nerfacto_base",
+        "method": "nerfacto",
+        "args": []
+      },
+      {
+        "name": "nerfacto_big",
+        "method": "nerfacto-big",
+        "args": []
+      },
+      {
+        "name": "splatfacto_base",
+        "method": "splatfacto",
+        "args": []
+      },
+      {
+        "name": "splatfacto_scale_reg",
+        "method": "splatfacto",
+        "args": [
+          "--pipeline.model.use_scale_regularization=True"
+        ]
+      }
+    ]
+  },
+  "evaluation": {
+    "run_ns_eval": true,
+    "compute_custom_metrics_when_pairs_exist": true,
+    "lpips": true
+  }
+}

@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local environments
+.venv/
+venv/
+env/
+.env
+
+# Large experiment data and generated outputs
+one_click_nvs/data/raw/
+one_click_nvs/data/frames_raw/
+one_click_nvs/data/frames_clean/
+one_click_nvs/data/toy_ns/
+one_click_nvs/data/toy_turntable/
+one_click_nvs/data/toy_ns_bad_*/
+one_click_nvs/outputs/
+one_click_nvs/outputs_turntable/
+one_click_nvs/results/
+one_click_nvs/results_turntable/
+one_click_nvs/report/
+one_click_nvs/report_turntable/
+
+# Model/checkpoint artifacts
+*.ckpt
+*.pth
+*.pt
+*.ply
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

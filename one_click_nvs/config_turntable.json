@@ -1,0 +1,72 @@
+{
+  "project_name": "toy_nvs_turntable_project",
+  "paths": {
+    "video": "data/raw/toy.mp4",
+    "frames_raw": "data/frames_raw",
+    "frames_clean": "data/frames_clean",
+    "nerfstudio_data": "data/toy_turntable",
+    "splits": "data/splits",
+    "outputs": "outputs_turntable",
+    "results": "results_turntable",
+    "figures": "results_turntable/figures",
+    "tables": "results_turntable/tables",
+    "report": "report_turntable"
+  },
+  "extract": {
+    "frame_step": 2,
+    "max_width": 960,
+    "jpeg_quality": 95
+  },
+  "filter": {
+    "blur_quantile": 0.05,
+    "brightness_min": 25,
+    "brightness_max": 235,
+    "contrast_min": 8,
+    "phash_min_distance": 2,
+    "max_frames": 240
+  },
+  "turntable": {
+    "fov_degrees": 55.0,
+    "radius": 3.0,
+    "elevation_degrees": 8.0,
+    "total_angle_degrees": 360.0,
+    "start_angle_degrees": 0.0,
+    "max_frames": 240,
+    "generate_sparse_ply": true,
+    "sparse_points": 8000
+  },
+  "split": {
+    "train": 0.6,
+    "val": 0.2,
+    "test": 0.2,
+    "strategy": "turntable_round_robin"
+  },
+  "training": {
+    "dataset_json": "data/toy_turntable/transforms.json",
+    "max_num_iterations": 15000,
+    "models": [
+      {
+        "name": "nerfacto_turntable",
+        "method": "nerfacto",
+        "args": []
+      },
+      {
+        "name": "splatfacto_turntable",
+        "method": "splatfacto",
+        "args": []
+      },
+      {
+        "name": "splatfacto_turntable_reg",
+        "method": "splatfacto",
+        "args": [
+          "--pipeline.model.use_scale_regularization=True"
+        ]
+      }
+    ]
+  },
+  "evaluation": {
+    "run_ns_eval": false,
+    "compute_custom_metrics_when_pairs_exist": true,
+    "lpips": true
+  }
+}
