@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -14,7 +15,23 @@ def markdown_table(path: Path) -> str:
     df = pd.read_csv(path)
     if df.empty:
         return "_暂无数据_"
-    return df.to_markdown(index=False)
+    df = df.fillna("")
+    headers = [str(col) for col in df.columns]
+    rows = [[str(value) for value in row] for row in df.astype(str).values.tolist()]
+    widths = [
+        max(len(headers[i]), *(len(row[i]) for row in rows)) if rows else len(headers[i])
+        for i in range(len(headers))
+    ]
+
+    def fmt_line(values: list[str]) -> str:
+        return "| " + " | ".join(value.ljust(widths[i]) for i, value in enumerate(values)) + " |"
+
+    separator = "| " + " | ".join("-" * width for width in widths) + " |"
+    return "\n".join([fmt_line(headers), separator, *(fmt_line(row) for row in rows)])
+
+
+def rel_link(from_dir: Path, target: Path) -> str:
+    return Path(os.path.relpath(target, start=from_dir)).as_posix()
 
 
 def main() -> None:
@@ -30,6 +47,15 @@ def main() -> None:
 
     metrics_md = markdown_table(tables_dir / "metrics_summary.csv")
     split_md = markdown_table(splits_dir / "split.csv")
+    frame_quality_fig = rel_link(report_dir, figures_dir / "frame_quality_distribution.png")
+    trajectory_fig = rel_link(report_dir, figures_dir / "camera_trajectory_split.png")
+    psnr_fig = rel_link(report_dir, figures_dir / "psnr_barplot.png")
+    ssim_fig = rel_link(report_dir, figures_dir / "ssim_barplot.png")
+    lpips_fig = rel_link(report_dir, figures_dir / "lpips_barplot.png")
+    speed_quality_fig = rel_link(report_dir, figures_dir / "speed_quality_tradeoff.png")
+    is_turntable = "turntable" in cfg.get("project_name", "").lower() or "turntable" in str(relpath(cfg, "paths", "nerfstudio_data")).lower()
+    pose_method = "转台/圆轨迹先验位姿" if is_turntable else "COLMAP/Nerfstudio"
+    run_command = "./run_turntable_pipeline.sh" if is_turntable else "./run_pipeline.sh"
 
     text = f"""# toy.mp4 新视图合成实验报告草稿
 
@@ -53,16 +79,16 @@ def main() -> None:
 1. 从视频中按固定间隔抽帧。
 2. 对每一帧计算质量指标。
 3. 删除模糊、曝光异常和重复帧。
-4. 使用 COLMAP/Nerfstudio 估计相机位姿。
+4. 使用 {pose_method} 生成相机位姿。
 5. 生成 NeRF/3DGS 可训练的数据格式。
 
 帧质量分布图：
 
-![frame_quality_distribution](../results/figures/frame_quality_distribution.png)
+![frame_quality_distribution]({frame_quality_fig})
 
 相机轨迹与划分图：
 
-![camera_trajectory_split](../results/figures/camera_trajectory_split.png)
+![camera_trajectory_split]({trajectory_fig})
 
 ## 3. Metodologia 方法论
 
@@ -73,6 +99,8 @@ def main() -> None:
 ### 3.2 轨迹感知划分
 
 视频相邻帧高度相似，随机划分容易导致测试指标虚高。因此本实验根据相机轨迹顺序进行分层采样，形成训练集、验证集和测试集。
+
+本次配置采用的位姿策略：{pose_method}。
 
 ### 3.3 模型设置
 
@@ -106,13 +134,13 @@ NeRF 类模型：
 
 ### 4.3 指标图
 
-![psnr_barplot](../results/figures/psnr_barplot.png)
+![psnr_barplot]({psnr_fig})
 
-![ssim_barplot](../results/figures/ssim_barplot.png)
+![ssim_barplot]({ssim_fig})
 
-![lpips_barplot](../results/figures/lpips_barplot.png)
+![lpips_barplot]({lpips_fig})
 
-![speed_quality_tradeoff](../results/figures/speed_quality_tradeoff.png)
+![speed_quality_tradeoff]({speed_quality_fig})
 
 ### 4.4 结果讨论
 
@@ -135,9 +163,9 @@ NeRF 类模型：
 
 ## 附录：复现实验命令
 
-```powershell
+```bash
 cd one_click_nvs
-.\\run_pipeline.ps1
+{run_command}
 ```
 """
 
