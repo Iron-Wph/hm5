@@ -105,7 +105,8 @@ else
 fi
 
 run_step "6. Build figures" scripts/06_make_figures.py --config "$CONFIG"
-run_step "7. Write report outline" scripts/07_write_report_outline.py --config "$CONFIG"
+run_step "7. Build qualitative examples" scripts/08_make_qualitative_examples.py --config "$CONFIG"
+run_step "8. Write report outline" scripts/07_write_report_outline.py --config "$CONFIG"
 
 echo
 echo "Turntable pipeline finished. Check:"

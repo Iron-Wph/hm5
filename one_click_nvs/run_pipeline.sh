@@ -131,7 +131,8 @@ else
 fi
 
 run_step "7. Build figures" scripts/06_make_figures.py --config "$CONFIG"
-run_step "8. Write report outline" scripts/07_write_report_outline.py --config "$CONFIG"
+run_step "8. Build qualitative examples" scripts/08_make_qualitative_examples.py --config "$CONFIG"
+run_step "9. Write report outline" scripts/07_write_report_outline.py --config "$CONFIG"
 
 echo
 echo "Pipeline finished. Check:"

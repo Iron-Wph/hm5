@@ -53,6 +53,7 @@ def main() -> None:
     ssim_fig = rel_link(report_dir, figures_dir / "ssim_barplot.png")
     lpips_fig = rel_link(report_dir, figures_dir / "lpips_barplot.png")
     speed_quality_fig = rel_link(report_dir, figures_dir / "speed_quality_tradeoff.png")
+    qualitative_fig = rel_link(report_dir, figures_dir / "qualitative_examples.png")
     is_turntable = "turntable" in cfg.get("project_name", "").lower() or "turntable" in str(relpath(cfg, "paths", "nerfstudio_data")).lower()
     pose_method = "转台/圆轨迹先验位姿" if is_turntable else "COLMAP/Nerfstudio"
     run_command = "./run_turntable_pipeline.sh" if is_turntable else "./run_pipeline.sh"
@@ -143,6 +144,12 @@ NeRF 类模型：
 ![speed_quality_tradeoff]({speed_quality_fig})
 
 ### 4.4 结果讨论
+
+### 4.4 定性示例
+
+![qualitative_examples]({qualitative_fig})
+
+这张图用于直接观察不同模型的新视图合成效果。若图像出现明显错位、模糊、漂浮纹理或主体结构不稳定，应在报告中说明其原因可能来自近似转台位姿、物体未居中、背景干扰或视角划分难度较高。
 
 请根据实际渲染图像补充以下分析：
 

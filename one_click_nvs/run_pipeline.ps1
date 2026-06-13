@@ -65,7 +65,8 @@ if (-not $SkipEval) {
 }
 
 Invoke-Step "7. Build figures" @("scripts/06_make_figures.py", "--config", $Config)
-Invoke-Step "8. Write report outline" @("scripts/07_write_report_outline.py", "--config", $Config)
+Invoke-Step "8. Build qualitative examples" @("scripts/08_make_qualitative_examples.py", "--config", $Config)
+Invoke-Step "9. Write report outline" @("scripts/07_write_report_outline.py", "--config", $Config)
 
 Write-Host ""
 Write-Host "Pipeline finished. Check:"
