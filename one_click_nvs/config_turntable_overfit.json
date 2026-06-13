@@ -1,5 +1,5 @@
 {
-  "project_name": "toy_nvs_turntable_overfit_project",
+  "project_name": "toy_nvs_turntable_fullvideo_project",
   "paths": {
     "video": "data/raw/toy.mp4",
     "frames_raw": "data/frames_raw_overfit",
@@ -51,7 +51,7 @@
     "train": 0.6,
     "val": 0.2,
     "test": 0.2,
-    "strategy": "turntable_overfit_train_all_frames",
+    "strategy": "turntable_fullvideo_train_all_frames",
     "train_all_frames": true
   },
   "training": {
@@ -59,12 +59,17 @@
     "max_num_iterations": 30000,
     "models": [
       {
-        "name": "nerfacto_turntable_overfit",
+        "name": "nerfacto_turntable_fullvideo",
         "method": "nerfacto",
         "args": []
       },
       {
-        "name": "splatfacto_turntable_reg_overfit",
+        "name": "splatfacto_turntable_fullvideo",
+        "method": "splatfacto",
+        "args": []
+      },
+      {
+        "name": "splatfacto_turntable_reg_fullvideo",
         "method": "splatfacto",
         "args": [
           "--pipeline.model.use_scale_regularization=True"

@@ -15,12 +15,12 @@ Usage:
   ./run_turntable_overfit.sh [options]
 
 Options:
-  --skip-train       Generate overfit turntable dataset but skip training
+  --skip-train       Generate full-video turntable dataset but skip training
   --skip-eval        Skip evaluation/report assets
   --force-retrain    Retrain even if configs already exist
   -h, --help         Show this help
 
-This pipeline is for visual overfit/quality probing:
+This pipeline is for full-video long-training quality probing:
 - frame_step=1
 - all filtered frames are used for training
 - 30000 iterations
@@ -72,20 +72,20 @@ fi
 
 run_step "1. Extract all frames" scripts/00_extract_score_frames.py --config "$CONFIG"
 run_step "2. Light frame filtering" scripts/01_filter_frames.py --config "$CONFIG"
-run_step "3. Generate object-focused turntable overfit dataset" scripts/02b_generate_turntable_poses.py --config "$CONFIG"
+run_step "3. Generate object-focused full-video turntable dataset" scripts/02b_generate_turntable_poses.py --config "$CONFIG"
 
 if [[ "$SKIP_TRAIN" -eq 0 ]]; then
   TRAIN_ARGS=(scripts/04_train_all.py --config "$CONFIG")
   if [[ "$FORCE_RETRAIN" -eq 1 ]]; then
     TRAIN_ARGS+=(--force-retrain)
   fi
-  run_step "4. Train overfit models" "${TRAIN_ARGS[@]}"
+  run_step "4. Train full-video models" "${TRAIN_ARGS[@]}"
 else
   echo "Skipping model training."
 fi
 
 if [[ "$SKIP_EVAL" -eq 0 ]]; then
-  run_step "5. Evaluate overfit models" scripts/05_eval_metrics.py --config "$CONFIG" --skip-ns-eval
+  run_step "5. Evaluate full-video models" scripts/05_eval_metrics.py --config "$CONFIG" --skip-ns-eval
   run_step "6. Build figures" scripts/06_make_figures.py --config "$CONFIG"
   run_step "7. Build qualitative examples" scripts/08_make_qualitative_examples.py --config "$CONFIG"
   run_step "8. Write report outline" scripts/07_write_report_outline.py --config "$CONFIG"
@@ -94,6 +94,6 @@ else
 fi
 
 echo
-echo "Overfit pipeline finished. Check:"
+echo "Full-video pipeline finished. Check:"
 echo "  results_turntable_overfit/figures/qualitative_examples.png"
 echo "  results_turntable_overfit/tables/metrics_summary.csv"
