@@ -35,6 +35,18 @@
     "generate_sparse_ply": true,
     "sparse_points": 8000
   },
+  "object_focus": {
+    "enabled": true,
+    "center_x": 0.5,
+    "center_y": 0.56,
+    "width_fraction": 0.62,
+    "height_fraction": 0.86,
+    "mask_enabled": true,
+    "mask_center_x": 0.5,
+    "mask_center_y": 0.54,
+    "mask_radius_x": 0.48,
+    "mask_radius_y": 0.48
+  },
   "split": {
     "train": 0.6,
     "val": 0.2,

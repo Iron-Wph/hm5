@@ -57,6 +57,12 @@ def main() -> None:
     is_turntable = "turntable" in cfg.get("project_name", "").lower() or "turntable" in str(relpath(cfg, "paths", "nerfstudio_data")).lower()
     pose_method = "转台/圆轨迹先验位姿" if is_turntable else "COLMAP/Nerfstudio"
     run_command = "./run_turntable_pipeline.sh" if is_turntable else "./run_pipeline.sh"
+    focus_cfg = cfg.get("object_focus", {})
+    focus_text = (
+        "本实验还启用了中心裁剪与主体椭圆 mask，以降低固定背景对转台先验训练的干扰。"
+        if focus_cfg.get("enabled")
+        else "本实验使用完整图像进行训练。"
+    )
 
     text = f"""# toy.mp4 新视图合成实验报告草稿
 
@@ -96,6 +102,8 @@ def main() -> None:
 ### 3.1 自动帧筛选
 
 本实验使用 Laplacian 方差衡量图像模糊度，使用灰度均值衡量亮度，使用灰度标准差衡量对比度，并通过感知哈希检测相邻帧重复度。
+
+{focus_text}
 
 ### 3.2 轨迹感知划分
 

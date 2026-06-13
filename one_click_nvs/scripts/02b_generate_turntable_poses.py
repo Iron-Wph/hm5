@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import math
-import shutil
 from pathlib import Path
 
 import cv2
@@ -60,6 +59,41 @@ def write_sparse_ply(path: Path, count: int, radius: float) -> None:
             f.write(f"{p[0]:.6f} {p[1]:.6f} {p[2]:.6f} {int(c[0])} {int(c[1])} {int(c[2])}\n")
 
 
+def crop_bounds(width: int, height: int, focus_cfg: dict) -> tuple[int, int, int, int]:
+    if not bool(focus_cfg.get("enabled", False)):
+        return 0, 0, width, height
+    crop_w = max(32, int(round(width * float(focus_cfg.get("width_fraction", 1.0)))))
+    crop_h = max(32, int(round(height * float(focus_cfg.get("height_fraction", 1.0)))))
+    cx = int(round(width * float(focus_cfg.get("center_x", 0.5))))
+    cy = int(round(height * float(focus_cfg.get("center_y", 0.5))))
+    x0 = max(0, min(width - crop_w, cx - crop_w // 2))
+    y0 = max(0, min(height - crop_h, cy - crop_h // 2))
+    return x0, y0, x0 + crop_w, y0 + crop_h
+
+
+def crop_image(image: np.ndarray, focus_cfg: dict) -> np.ndarray:
+    h, w = image.shape[:2]
+    x0, y0, x1, y1 = crop_bounds(w, h, focus_cfg)
+    return image[y0:y1, x0:x1].copy()
+
+
+def make_focus_mask(width: int, height: int, focus_cfg: dict) -> np.ndarray:
+    mask = np.zeros((height, width), dtype=np.uint8)
+    if not bool(focus_cfg.get("mask_enabled", False)):
+        mask[:, :] = 255
+        return mask
+    center = (
+        int(round(width * float(focus_cfg.get("mask_center_x", 0.5)))),
+        int(round(height * float(focus_cfg.get("mask_center_y", 0.5)))),
+    )
+    axes = (
+        max(1, int(round(width * float(focus_cfg.get("mask_radius_x", 0.48))))),
+        max(1, int(round(height * float(focus_cfg.get("mask_radius_y", 0.48))))),
+    )
+    cv2.ellipse(mask, center, axes, 0, 0, 360, 255, thickness=-1)
+    return mask
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config_turntable.json")
@@ -69,7 +103,9 @@ def main() -> None:
     frames_dir = relpath(cfg, "paths", "frames_clean")
     out_dir = ensure_dir(relpath(cfg, "paths", "nerfstudio_data"))
     image_dir = ensure_dir(out_dir / "images")
+    mask_dir = ensure_dir(out_dir / "masks")
     splits_dir = ensure_dir(relpath(cfg, "paths", "splits"))
+    focus_cfg = cfg.get("object_focus", {})
 
     image_paths = sorted(
         [p for p in frames_dir.iterdir() if p.suffix.lower() in {".jpg", ".jpeg", ".png"}],
@@ -86,6 +122,7 @@ def main() -> None:
     first = cv2.imread(str(image_paths[0]))
     if first is None:
         raise SystemExit(f"Could not read image: {image_paths[0]}")
+    first = crop_image(first, focus_cfg)
     height, width = first.shape[:2]
     fov = math.radians(float(cfg["turntable"]["fov_degrees"]))
     fl = 0.5 * width / math.tan(0.5 * fov)
@@ -114,9 +151,16 @@ def main() -> None:
         split = assign_split(i)
         dst_name = f"{split}_{i:06d}{src.suffix.lower()}"
         dst_rel = Path("images") / dst_name
-        shutil.copy2(src, out_dir / dst_rel)
+        image = cv2.imread(str(src))
+        if image is None:
+            continue
+        image = crop_image(image, focus_cfg)
+        cv2.imwrite(str(out_dir / dst_rel), image)
+        mask_rel = Path("masks") / f"{split}_{i:06d}.png"
+        cv2.imwrite(str(out_dir / mask_rel), make_focus_mask(image.shape[1], image.shape[0], focus_cfg))
         frame = {
             "file_path": dst_rel.as_posix(),
+            "mask_path": mask_rel.as_posix(),
             "transform_matrix": c2w.tolist(),
         }
         frames.append(frame)
@@ -155,6 +199,7 @@ def main() -> None:
         "val_filenames": split_filenames["val"],
         "test_filenames": split_filenames["test"],
         "turntable_pose_prior": cfg["turntable"],
+        "object_focus": focus_cfg,
     }
 
     if bool(cfg["turntable"].get("generate_sparse_ply", True)):
