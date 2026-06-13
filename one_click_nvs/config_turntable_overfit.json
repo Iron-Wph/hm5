@@ -1,0 +1,80 @@
+{
+  "project_name": "toy_nvs_turntable_overfit_project",
+  "paths": {
+    "video": "data/raw/toy.mp4",
+    "frames_raw": "data/frames_raw_overfit",
+    "frames_clean": "data/frames_clean_overfit",
+    "nerfstudio_data": "data/toy_turntable_overfit",
+    "splits": "data/splits_overfit",
+    "outputs": "outputs_turntable_overfit",
+    "results": "results_turntable_overfit",
+    "figures": "results_turntable_overfit/figures",
+    "tables": "results_turntable_overfit/tables",
+    "report": "report_turntable_overfit"
+  },
+  "extract": {
+    "frame_step": 1,
+    "max_width": 960,
+    "jpeg_quality": 95
+  },
+  "filter": {
+    "blur_quantile": 0.0,
+    "brightness_min": 20,
+    "brightness_max": 240,
+    "contrast_min": 5,
+    "phash_min_distance": 0,
+    "max_frames": 0
+  },
+  "turntable": {
+    "fov_degrees": 55.0,
+    "radius": 3.0,
+    "elevation_degrees": 8.0,
+    "total_angle_degrees": 360.0,
+    "start_angle_degrees": 0.0,
+    "max_frames": 0,
+    "generate_sparse_ply": true,
+    "sparse_points": 12000
+  },
+  "object_focus": {
+    "enabled": true,
+    "center_x": 0.5,
+    "center_y": 0.56,
+    "width_fraction": 0.62,
+    "height_fraction": 0.86,
+    "mask_enabled": true,
+    "mask_center_x": 0.5,
+    "mask_center_y": 0.54,
+    "mask_radius_x": 0.48,
+    "mask_radius_y": 0.48
+  },
+  "split": {
+    "train": 0.6,
+    "val": 0.2,
+    "test": 0.2,
+    "strategy": "turntable_overfit_train_all_frames",
+    "train_all_frames": true
+  },
+  "training": {
+    "dataset_json": "data/toy_turntable_overfit/transforms.json",
+    "max_num_iterations": 30000,
+    "models": [
+      {
+        "name": "nerfacto_turntable_overfit",
+        "method": "nerfacto",
+        "args": []
+      },
+      {
+        "name": "splatfacto_turntable_reg_overfit",
+        "method": "splatfacto",
+        "args": [
+          "--pipeline.model.use_scale_regularization=True"
+        ]
+      }
+    ]
+  },
+  "evaluation": {
+    "run_ns_eval": false,
+    "compute_custom_metrics_when_pairs_exist": true,
+    "lpips": true
+  }
+}

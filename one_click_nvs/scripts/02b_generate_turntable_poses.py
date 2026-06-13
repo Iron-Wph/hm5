@@ -136,6 +136,7 @@ def main() -> None:
     frames: list[dict[str, object]] = []
     split_rows: list[dict[str, object]] = []
     split_filenames: dict[str, list[str]] = {"train": [], "val": [], "test": []}
+    train_all_frames = bool(cfg.get("split", {}).get("train_all_frames", False))
 
     for i, src in enumerate(image_paths):
         theta = start_angle + total_angle * i / max(1, len(image_paths))
@@ -164,7 +165,12 @@ def main() -> None:
             "transform_matrix": c2w.tolist(),
         }
         frames.append(frame)
-        split_filenames[split].append(dst_rel.as_posix())
+        if train_all_frames:
+            split_filenames["train"].append(dst_rel.as_posix())
+            if split in {"val", "test"}:
+                split_filenames[split].append(dst_rel.as_posix())
+        else:
+            split_filenames[split].append(dst_rel.as_posix())
         split_rows.append(
             {
                 "index": i,
@@ -200,6 +206,7 @@ def main() -> None:
         "test_filenames": split_filenames["test"],
         "turntable_pose_prior": cfg["turntable"],
         "object_focus": focus_cfg,
+        "train_all_frames": train_all_frames,
     }
 
     if bool(cfg["turntable"].get("generate_sparse_ply", True)):

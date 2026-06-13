@@ -58,10 +58,16 @@ def main() -> None:
     pose_method = "转台/圆轨迹先验位姿" if is_turntable else "COLMAP/Nerfstudio"
     run_command = "./run_turntable_pipeline.sh" if is_turntable else "./run_pipeline.sh"
     focus_cfg = cfg.get("object_focus", {})
+    train_all_frames = bool(cfg.get("split", {}).get("train_all_frames", False))
     focus_text = (
         "本实验还启用了中心裁剪与主体椭圆 mask，以降低固定背景对转台先验训练的干扰。"
         if focus_cfg.get("enabled")
         else "本实验使用完整图像进行训练。"
+    )
+    overfit_text = (
+        "注意：该配置启用了 train_all_frames，所有帧都会进入训练集，因此指标只能作为可视化/过拟合质量参考，不能视为严格未见视角测试。"
+        if train_all_frames
+        else "本配置保留独立的训练、验证和测试划分。"
     )
 
     text = f"""# toy.mp4 新视图合成实验报告草稿
@@ -104,6 +110,8 @@ def main() -> None:
 本实验使用 Laplacian 方差衡量图像模糊度，使用灰度均值衡量亮度，使用灰度标准差衡量对比度，并通过感知哈希检测相邻帧重复度。
 
 {focus_text}
+
+{overfit_text}
 
 ### 3.2 轨迹感知划分
 
