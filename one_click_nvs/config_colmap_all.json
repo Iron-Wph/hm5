@@ -1,0 +1,77 @@
+{
+  "project_name": "toy_nvs_colmap_all_project",
+  "paths": {
+    "video": "data/raw/toy.mp4",
+    "frames_raw": "data/frames_raw_colmap_all",
+    "frames_clean": "data/frames_raw_colmap_all",
+    "nerfstudio_data": "data/toy_ns_colmap_all",
+    "splits": "data/splits_colmap_all",
+    "outputs": "outputs_colmap_all",
+    "results": "results_colmap_all",
+    "figures": "results_colmap_all/figures",
+    "tables": "results_colmap_all/tables",
+    "report": "report_colmap_all"
+  },
+  "extract": {
+    "frame_step": 1,
+    "max_width": 0,
+    "jpeg_quality": 95
+  },
+  "filter": {
+    "blur_quantile": 0.0,
+    "brightness_min": 0,
+    "brightness_max": 255,
+    "contrast_min": 0,
+    "phash_min_distance": 0,
+    "max_frames": 0
+  },
+  "colmap": {
+    "source": "frames_raw",
+    "direct_colmap": true,
+    "overwrite": true,
+    "camera_model": "SIMPLE_RADIAL",
+    "single_camera": true,
+    "matching_method": "sequential",
+    "sequential_overlap": 20,
+    "guided_matching": true,
+    "use_gpu": true,
+    "sift_max_image_size": 3200,
+    "ba_refine_focal_length": true,
+    "ba_refine_principal_point": false,
+    "ba_refine_extra_params": true
+  },
+  "split": {
+    "train": 0.6,
+    "val": 0.2,
+    "test": 0.2,
+    "strategy": "trajectory_round_robin"
+  },
+  "training": {
+    "dataset_json": "data/toy_ns_colmap_all/transforms_splits.json",
+    "max_num_iterations": 15000,
+    "models": [
+      {
+        "name": "nerfacto_colmap_all",
+        "method": "nerfacto",
+        "args": []
+      },
+      {
+        "name": "splatfacto_colmap_all",
+        "method": "splatfacto",
+        "args": []
+      },
+      {
+        "name": "splatfacto_colmap_all_reg",
+        "method": "splatfacto",
+        "args": [
+          "--pipeline.model.use_scale_regularization=True"
+        ]
+      }
+    ]
+  },
+  "evaluation": {
+    "run_ns_eval": false,
+    "compute_custom_metrics_when_pairs_exist": true,
+    "lpips": true
+  }
+}
