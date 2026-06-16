@@ -8,6 +8,7 @@ CONFIG="config_colmap_all.json"
 SKIP_TRAIN=0
 SKIP_EVAL=0
 SKIP_COLMAP=0
+CONVERT_EXISTING_COLMAP=0
 DRY_RUN=0
 
 usage() {
@@ -19,6 +20,8 @@ Options:
   --skip-train       Stop after COLMAP and split generation
   --skip-eval        Skip evaluation/report assets
   --skip-colmap      Reuse existing data/toy_ns_colmap_all/transforms.json
+  --convert-existing-colmap
+                     Convert the largest existing COLMAP sparse model, then continue
   --dry-run          Print external COLMAP/Nerfstudio commands without executing them
   -h, --help         Show this help
 
@@ -43,6 +46,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --skip-colmap)
       SKIP_COLMAP=1
+      shift
+      ;;
+    --convert-existing-colmap)
+      CONVERT_EXISTING_COLMAP=1
       shift
       ;;
     --dry-run)
@@ -76,7 +83,13 @@ if [[ ! -f "$VIDEO_PATH" ]]; then
   exit 1
 fi
 
-if [[ "$SKIP_COLMAP" -eq 0 ]]; then
+if [[ "$CONVERT_EXISTING_COLMAP" -eq 1 ]]; then
+  COLMAP_ARGS=(scripts/02_process_colmap_direct.py --config "$CONFIG" --convert-existing)
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    COLMAP_ARGS+=(--dry-run)
+  fi
+  run_step "1-2. Convert largest existing COLMAP sparse model" "${COLMAP_ARGS[@]}"
+elif [[ "$SKIP_COLMAP" -eq 0 ]]; then
   run_step "1. Extract all raw frames" scripts/00_extract_score_frames.py --config "$CONFIG"
 
   COLMAP_ARGS=(scripts/02_process_colmap_direct.py --config "$CONFIG")
